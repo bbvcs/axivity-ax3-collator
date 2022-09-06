@@ -1,57 +1,42 @@
-# Axivity AX3 Light and Temperature Extractor
+# Axivity AX-Series Data CSV Collation Tool
 
-A tool created to extract the raw light and temperature data from Axivity AX3 wrist-worn accelerometers (as used in the UK Biobank). This was created whilst working at the Complex Trait Genomics team at the University of Exeter Medical School (http://www.t2diabetesgenes.org/who-we-are/). Please contact James Christie (jlcc201@exeter.ac.uk) or Andy Wood (a.r.wood@exeter.ac.uk) for more information.
+A simple C++ command line tool designed to read Light, Temperature and Accelerometry (Gyro on AX6 and Gyro/Mag on AX9 should work also) data from Axivity AX-Series Data Logger .CWA file and merge into a single .CSV file.
 
-Features:
-- convert large .cwa binary files to .csv 
-- light data extraction
-- temperature data extraction 
-- central moving average of data (variable window size)
-- summarise individuals light or temperature data (useful for summarising many individuals in to one file)
-- framework exists to extract other data such as raw accelerometer readings 
+Tested to work using a 14-day AX3 (100Hz Accelerometry) .CWA file (should work for other setups too), example output:
+
+| timestamp     | accel_x   | accel_y  | accel_z   | light   | temperature |
+|---------------|-----------|----------|-----------|---------|-------------|
+| 1655288789460 | 0.34375   | -0.6875  | -0.765625 | 11810.4 | 31.4453     |
+| 1655288789470 | -0.75     | 0.515625 | -0.21875  |         |             |
+| 1655288789480 | -0.8125   | 0.53125  | -0.234375 |         |             |
+| 1655288789490 | -0.84375  | 0.546875 | -0.21875  |         |             |
+| 1655288789500 | -0.890625 | 0.546875 | -0.21875  |         |             |
+| 1655288789510 | -0.96875  | 0.578125 | -0.1875   |         |             |
+| 1655288789520 | -0.984375 | 0.640625 | -0.171875 |         |             |
+| 1655288789530 | -0.984375 | 0.65625  | -0.140625 |
+....
+
+In this instance, there were 120 accelerometer samples per packet (packets are not tied uniquely to seconds). Light and Temperature are only recorded once per packet, so would not appear again until the 120th row.
+
+Timestamps are *milliseconds since unix epoch*. Typically, unix epoch timestamps are in *seconds* since unix epoch. To convert to the standard format, remove the last 3 digits from a timestamp (1655288789460 becomes 1655288789). 
+
+This project is a fork of James Christie and Andrew Wood's [Axivity AX3 Light and Temperature Extractor](https://github.com/jlc-christie/axivity-ax3-tool) tool (GPL v3), with code also taken from the ["cwa-convert"](https://github.com/digitalinteraction/openmovement/blob/master/Software/AX3/cwa-convert/c/main.c) code (BSD 2) of Daniel Jackson's (OpenLab, Newcastle University) official OMGUI Program. To adhere with licensing, source code taken from the OMGUI project has been noted as such.
+
+This program is not well-tested due to lack of variety of data, so use at your own risk - there may be inaccuracies in results. Please inspect the code before usage. I would recommend the official OMGUI software for best results.
 
 ## Install
-1. clone this repo \
-   `git clone https://github.com/jlc-christie/axivity-ax3-tool.git` 
-2. compile with prefered c++11 compatible compiler \
-   e.g. `g++ ax3.cpp -o ax3 -O3`, if using g++
+1. Clone this Repo:
+`git clone "https://github.com/bbvcs/axivity-ax3-collator.git"`
+2. Compile using a C++ 11 compatible compiler:
+`g++ -std=c++11 -Wall main.cpp -o ax-collator`
 
 ## Usage
-```
-./ax3 (-l|-t)  -i <input file> -o <output file> [-a <window size>] [-s <summary file>]
-    -l -- Light mode
-    -t -- Temperature mode
-    -i -- Path to .cwa input file
-    -o -- path to .csv output file to be generated
-    -a -- Use Central Moving Average on data read
-    -s -- Calculate summary statistics
-```
-### Example:
-Extract the **`light (-l)`** data from the input file **`my_raw_data_file.cwa`**, use a central moving average **(`-a`)** of 5 minutes (300 seconds) and save the output to **`light_data.csv`**. Also, append summary statistics about the light data to the file **`summary_statistics.csv`**.
-```
-./ax3 -l -i my_raw_data_file.cwa -o light_data.csv -a 300 -s summary_statistics.csv
-```
+`/ax-collator -i [input file].cwa -o [output file].csv`
 
-## Plotting 
-This repo also contains a small gnuplot script to either interactively plot the results or save the plots to files. Use `-e "filename='out.csv'"` to pass in the data file, making sure that the -e flag comes **before** the script file. Append `-p` to display the interactive plot and finally pass another argument `outfile` if you want the plots to be saved to a file (recommended, as interactive plot is relatively slow). 
-Examples:
-1. Display interactive plot, don't save plot images \
-   `gnuplot -e "filename='out.csv'" plot.gpl -p`
-2. Display interactive plot **and** save plot images \
-   `gnuplot -e "filename='out.csv';outfile='my_plot'" plot.gpl -p` \
-   *creates 2 files, `my_plot.png` and `my_plot.ps`, ps can be converted easily to pdf if required (e.g. `ps2pdf my_plot.ps my_plot.pdf`)*
-3. Don't display interactive plot, just save images to files \
-   `gnuplot -e "filename='out.csv';outfile='my_plot'" plot.gpl`
-   
-Example output from plot:
 
-![alt text](sample_plot.png "sample plot image")
-   
-## Summary Statistics
-As mentioned above, the `-s` flag followed by a summary file filename, will calculate the mean and standard deviation of light or temperature (depending on which mode it is in) for the whole day as well as hourly. Because this functionality is meant to be used as part of a batch script which appends to the same file, there is **no header**. The data is comma seperated and the format is as follows:
+Billy C. Smith, Newcastle University, UK
+Created while working as a summer student for the CNNP Lab, Newcastle University.
+(No association with the Open Movement Team / Open Lab @ Newcastle University)
 
-| filename | mean | iqr | std_dev | hour_0_mean | hour_0_std_dev | hour_1_mean | hour_1_std_dev | ... | hour_23_mean | hour_23_std_dev
-| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| 27492749 | 20.558 | 120.000 |1.381 | 21.550 | 1.656 | 21.229 | 1.524 | ... | 20.972 | 1.120 |
 
 
