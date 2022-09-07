@@ -31,12 +31,15 @@ This program is not well-tested due to lack of variety of data, so use at your o
 `g++ -std=c++11 -Wall main.cpp -o ax-collator`
 
 ## Usage
-`/ax-collator -i [input file].cwa -o [output file].csv`
+`./ax-collator -i [input file].cwa -o [output file].csv`
 
 
-Billy C. Smith, Newcastle University, UK
-Created while working as a summer student for the CNNP Lab, Newcastle University.
-(No association with the Open Movement Team / Open Lab @ Newcastle University)
+Billy C. Smith, Newcastle University, UK   
+Created while working as a summer student for the CNNP Lab, Newcastle University.   
+(No association with the Open Movement Team / Open Lab @ Newcastle University)   
+
+
+
 
 
 

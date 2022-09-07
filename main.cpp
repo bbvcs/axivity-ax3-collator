@@ -280,9 +280,8 @@ void collate_and_convert(ifstream &file, string out_filename) {//, vector<string
     
     if (first_block== true){ 
 		
-	
-		printf("sample_rate: %f, sample_count: %d\n", sample_rate, sample_count);
-		printf("num_axes: %d, packing_format: %d\n", num_axes, packing_format);
+		printf("Detected AX%d, Sample Rate: %f\n", num_axes, sample_rate);
+		
 		
 		
 		// how many datapoints approx will we have
@@ -460,7 +459,11 @@ void collate_and_convert(ifstream &file, string out_filename) {//, vector<string
 	// <CWA_CONVERT> <END>
   }
 
-  cout << "Writing to file ..." << endl;
+  double duration = (ms_timestamps[ms_timestamps.size()-1] - ms_timestamps[0]) / 1000 / 60 / 60 / 24;
+  printf("Approximate Duration of Recording (days): %f\n", duration);
+  cout << "Writing to: " << out_filename << endl;
+
+ 
   
   ofstream out_file;
   out_file.open(out_filename, ios::out);
@@ -542,11 +545,13 @@ void collate_and_convert(ifstream &file, string out_filename) {//, vector<string
 }
 
 void print_usage() {
+  cout << "\n" << endl;
   cout << ">>>> Axivity AX-Series Data CSV Collation Tool <<<<" << endl;
-  cout << "Author: Billy C. Smith (bcsm@posteo.net)" << endl;
-  cout << "Thanks & Credit to Daniel Jackson and James Christie" << endl;
+  cout << "Author:\tBilly C. Smith (bcsm@posteo.net)" << endl;
+  cout << "\tWith thanks to Daniel Jackson and James Christie" << endl;
   cout << "Date: September 2022" << endl;
   cout << "Usage: ./ax3-collator -i [input file].cwa -o [output file].csv" << endl;
+  cout << "\n" << endl;
 }
 
 
@@ -555,6 +560,8 @@ int main(int argc, char* argv[]) {
 	/* Due to licensing conflicts, all code related to Open Movement's OMGUI 
 	 * (specifically 'cwa-convert')
 	 * will be surrounded with <CWA-CONVERT> tags. */
+	
+	print_usage();
 	
 	string in_filename;
 	string out_filename;
@@ -571,9 +578,6 @@ int main(int argc, char* argv[]) {
 				out_filename = string(argv[i+1]);
 				break;
 				
-			default:
-				print_usage();
-				break;
 		}
 	}
 	
